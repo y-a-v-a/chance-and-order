@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kenneth Martin</title>
+  <style>
+    body {
+      background: #F5F0EA;
+      display: flex;
+      justify-content: center;
+      align-items:center;
+      height: 100vh;
+    }
+
+    #container {
+      width: 60vh;
+      height: 60vh;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .line-1 {
+      position: absolute;
+      left: 10vh;
+      top: 0;
+      background: red;
+      height: 1vh;
+      width: calc(1.4 * 5 * 10vh);
+      transform: rotate(45deg);
+      transform-origin: top left;
+    }
+
+    .line {
+      position: absolute;
+      background: #ffdddd77;
+      height: 1vh;
+      transform-origin: top left;
+      /* background: repeating-linear-gradient(0deg,
+      #ffffff00 0,
+      #ffffff00 .5vh,
+      #5AB0C6 .5vh,
+      #5AB0C6 1vh,
+      #ffffff00 1vh,
+      #ffffff00 1.5vh,
+      #5AB0C6 1.5vh,
+      #5AB0C6 2vh,
+      #ffffff00 2vh,
+      #ffffff00 2.5vh,
+      #F6A752 2.5vh,
+      #F6A752 3vh,
+      #ffffff00 3vh,
+      #ffffff00 3.5vh,
+      #FE4648 3.5vh,
+      #FE4648 4vh,
+      #ffffff00 4vh,
+      #ffffff00 4.5vh,
+      #5D63B4 4.5vh,
+      #5D63B4 5vh
+      ); */
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- <div class="line-1"></div> -->
+  </div>
+  <script>
+    (function() {
+      const transparent = '#FFFFFF00';
+      const backgroundColors = [
+        // '#FFFFFF00',
+        '#5AB0C6',
+        '#F6A752',
+        '#FE4648',
+        '#5D63B4'
+      ];
+
+      function generateBackground(amount) {
+        // const stops = ['#FFFFFF00 0','#FFFFFF00 .5vh'];
+        const stops = [];
+        for (let i = 1; i <= amount + 1; i++) {
+          const randomColor = backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
+          stops.push(`${transparent} ${i - 1}vh`)
+          stops.push(`${transparent} ${i - .5}vh`)
+          stops.push(`${randomColor} ${i - .5}vh`)
+          stops.push(`${randomColor} ${i }vh`)
+        }
+
+        return `background: linear-gradient(0deg, ${stops.join(',')});`
+      }
+
+      function calcAngleDegrees(x, y) {
+        return Math.atan2(y, x) * -180 / Math.PI;
+      }
+
+      const used = [];
+
+      const points = [
+        [0,0],
+        [1,0],
+        [2,0],
+        [3,0],
+        [4,0],
+        [5,0],
+        [6,0],
+        [6,-1],
+        [6,-1],
+        [6,-3],
+        [6,-4],
+        [6,-5],
+        [6,-6],
+        [5,-6],
+        [4,-6],
+        [3,-6],
+        [2,-6],
+        [1,-6],
+        [0,-6],
+        [0,-5],
+        [0,-4],
+        [0,-3],
+        [0,-2],
+        [0,-1],
+      ];
+
+      for (let i = 0; i < 12; i++) {
+        const mySet = new Set();
+
+        while (mySet.size < 2) {
+          const val = Math.floor(Math.random() * 24);
+          if (used.indexOf(val) === -1) {
+            mySet.add(val);
+            used.push(val);
+          }
+        }
+        // console.log(used)
+
+        const coords = [...mySet];
+
+        const x = coords[0];
+        const y = coords[1];
+        const localPoints = [points[x], points[y]].sort((a,b) => a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0);
+        const point1 = localPoints[0];
+        const point2 = localPoints[1];
+        console.log(point1, point2);
+
+        const left = point1[0] * 10;
+        const top = Math.abs(point1[1] * 10);
+        const deltaX = point2[0] - point1[0];
+        const deltaY = point2[1] - point1[1];
+        const deg = calcAngleDegrees(deltaX, deltaY);
+        const sin = Math.sin(Math.atan2(deltaY, deltaX));
+        const width = (sin ? Math.abs(deltaY / sin) : deltaX) * 10;
+        // console.log(deltaX, deltaY, width, `Math.abs(${deltaY} / (Math.sin(Math.atan2(${deltaY}, ${deltaX})) ) * 10);`);
+        const height = i + 1 * 1;
+        console.log(i,sin)
+        let translateY = 0;
+        if (sin === 0 && point1[1] < -5) {
+          translateY = -height;
+        } else if (sin === 1 && point1[0] > 5) {
+          translateY = -height;
+        } else if (sin < -.5 && point1[0] === 0) {
+          translateY = -height;
+        } else if (sin > .5 && sin < 1) {
+          translateY = -height;
+        }
+
+        // const css = `left: ${left}vh; top: ${top}vh; transform: rotate(${deg}deg) translateY(-${height / 2}vh); width: ${width}vh; height: ${height}vh;`;
+        const css = `left: ${left}vh; top: ${top}vh; transform: rotate(${deg}deg) translateY(${translateY}vh); width: ${width}vh; height: ${height}vh; ${generateBackground(i)}`;
+
+        // console.log(css)
+
+        const el = document.createElement('div');
+        el.classList.add('line')
+        el.classList.add(`line-${i}`);
+        // el.textContent = i;
+        el.setAttribute('style', css);
+        const canvas = document.getElementById('container');
+        canvas.appendChild(el);
+      }
+    }());
+  </script>
+</body>
+</html>
