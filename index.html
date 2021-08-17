@@ -4,99 +4,89 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kenneth Martin</title>
+  <title>y-a-v-a • Kenneth Martin • Chance and Order</title>
   <style>
+    :root {
+      --unit: 1vh;
+    }
+
+    @media (orientation: portrait) {
+      :root {
+        --unit: 1vw;
+      }
+    }
+
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
     body {
       background: #F5F0EA;
       display: flex;
       justify-content: center;
       align-items:center;
-      height: 100vh;
+      height: 100%;
+      width: 100%;
+      margin: 0;
     }
 
     #container {
-      width: 60vh;
-      height: 60vh;
+      width: calc(60 * var(--unit));
+      height: calc(60 * var(--unit));
       margin: 0 auto;
       position: relative;
     }
 
-    .line-1 {
-      position: absolute;
-      left: 10vh;
-      top: 0;
-      background: red;
-      height: 1vh;
-      width: calc(1.4 * 5 * 10vh);
-      transform: rotate(45deg);
-      transform-origin: top left;
-    }
-
     .line {
       position: absolute;
-      background: #ffdddd77;
-      height: 1vh;
+      height: var(--unit);
       transform-origin: top left;
-      /* background: repeating-linear-gradient(0deg,
-      #ffffff00 0,
-      #ffffff00 .5vh,
-      #5AB0C6 .5vh,
-      #5AB0C6 1vh,
-      #ffffff00 1vh,
-      #ffffff00 1.5vh,
-      #5AB0C6 1.5vh,
-      #5AB0C6 2vh,
-      #ffffff00 2vh,
-      #ffffff00 2.5vh,
-      #F6A752 2.5vh,
-      #F6A752 3vh,
-      #ffffff00 3vh,
-      #ffffff00 3.5vh,
-      #FE4648 3.5vh,
-      #FE4648 4vh,
-      #ffffff00 4vh,
-      #ffffff00 4.5vh,
-      #5D63B4 4.5vh,
-      #5D63B4 5vh
-      ); */
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <!-- <div class="line-1"></div> -->
-  </div>
+  <div id="container"></div>
   <script>
     (function() {
       const transparent = '#FFFFFF00';
+
+      // colors taken from Kenneth Martin's work
       const backgroundColors = [
-        // '#FFFFFF00',
         '#5AB0C6',
         '#F6A752',
         '#FE4648',
         '#5D63B4'
       ];
 
+      /**
+       * Create linear gradient CSS programmatically
+       */
       function generateBackground(amount) {
-        // const stops = ['#FFFFFF00 0','#FFFFFF00 .5vh'];
         const stops = [];
         for (let i = 1; i <= amount + 1; i++) {
-          const randomColor = backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
-          stops.push(`${transparent} ${i - 1}vh`)
-          stops.push(`${transparent} ${i - .5}vh`)
-          stops.push(`${randomColor} ${i - .5}vh`)
-          stops.push(`${randomColor} ${i }vh`)
+          const randomIndex = Math.floor(Math.random() * backgroundColors.length);
+          const randomColor = backgroundColors[randomIndex];
+          stops.push(`${transparent} calc(${i - 1} * var(--unit))`);
+          stops.push(`${transparent} calc(${i - .5} * var(--unit))`);
+          stops.push(`${randomColor} calc(${i - .5} * var(--unit))`);
+          stops.push(`${randomColor} calc(${i } * var(--unit))`);
         }
 
         return `background: linear-gradient(0deg, ${stops.join(',')});`
       }
 
+      /**
+       * Calculate corner in degrees via tangens
+       */
       function calcAngleDegrees(x, y) {
         return Math.atan2(y, x) * -180 / Math.PI;
       }
 
+      // cache for already used points
       const used = [];
 
+      // initial coordinates of the square
       const points = [
         [0,0],
         [1,0],
@@ -106,7 +96,7 @@
         [5,0],
         [6,0],
         [6,-1],
-        [6,-1],
+        [6,-2],
         [6,-3],
         [6,-4],
         [6,-5],
@@ -124,37 +114,47 @@
         [0,-1],
       ];
 
+      // generate 12 bars
       for (let i = 0; i < 12; i++) {
-        const mySet = new Set();
+        const indexSet = new Set();
 
-        while (mySet.size < 2) {
+        // create a set of 2 unique coordinates
+        while (indexSet.size < 2) {
           const val = Math.floor(Math.random() * 24);
           if (used.indexOf(val) === -1) {
-            mySet.add(val);
+            indexSet.add(val);
             used.push(val);
           }
         }
-        // console.log(used)
 
-        const coords = [...mySet];
+        const indexes = [...indexSet];
+        const index1 = indexes[0];
+        const index2 = indexes[1];
 
-        const x = coords[0];
-        const y = coords[1];
-        const localPoints = [points[x], points[y]].sort((a,b) => a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0);
+        // sort to get lowest x first
+        const localPoints = [points[index1], points[index2]].sort((a,b) => a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0);
         const point1 = localPoints[0];
         const point2 = localPoints[1];
-        console.log(point1, point2);
 
+        // define x position for css
         const left = point1[0] * 10;
         const top = Math.abs(point1[1] * 10);
+
+        // calculate deltas
         const deltaX = point2[0] - point1[0];
         const deltaY = point2[1] - point1[1];
+
+        // calculate corner in degrees
         const deg = calcAngleDegrees(deltaX, deltaY);
+
+        // calculate hypotenuse, i.e. the width of the element
         const sin = Math.sin(Math.atan2(deltaY, deltaX));
         const width = (sin ? Math.abs(deltaY / sin) : deltaX) * 10;
-        // console.log(deltaX, deltaY, width, `Math.abs(${deltaY} / (Math.sin(Math.atan2(${deltaY}, ${deltaX})) ) * 10);`);
+
+        // calculate height based on index
         const height = i + 1 * 1;
-        console.log(i,sin)
+
+        // move rectangles a bit more within the container
         let translateY = 0;
         if (sin === 0 && point1[1] < -5) {
           translateY = -height;
@@ -166,16 +166,23 @@
           translateY = -height;
         }
 
-        // const css = `left: ${left}vh; top: ${top}vh; transform: rotate(${deg}deg) translateY(-${height / 2}vh); width: ${width}vh; height: ${height}vh;`;
-        const css = `left: ${left}vh; top: ${top}vh; transform: rotate(${deg}deg) translateY(${translateY}vh); width: ${width}vh; height: ${height}vh; ${generateBackground(i)}`;
+        // generate CSS
+        const css = [
+          `left: calc(${left} * var(--unit));`,
+          `top: calc(${top} * var(--unit));`,
+          `transform: rotate(${deg}deg) translateY(calc(${translateY} * var(--unit)));`,
+          `width: calc(${width} * var(--unit));`,
+          `height: calc(${height} * var(--unit));`,
+          `${generateBackground(i)}`
+        ].join('');
 
-        // console.log(css)
-
+        // create bar
         const el = document.createElement('div');
-        el.classList.add('line')
+        el.classList.add('line');
         el.classList.add(`line-${i}`);
-        // el.textContent = i;
         el.setAttribute('style', css);
+
+        // add bar to container
         const canvas = document.getElementById('container');
         canvas.appendChild(el);
       }
